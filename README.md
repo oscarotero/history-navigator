@@ -5,9 +5,10 @@ Minimalist js library to navigate across the browser history with no dependencie
 ```html
 <script type="text/javascript" src="src/navigator.js"></script>
 <script type="text/javascript">
-    var nav = Navigator.init(function (oldPage, newPage, cb) {
+    //Define the onChange method
+    var nav = HistoryNavigator(function (oldPage, newPage, callback) {
         console.log('from: ' + oldPage.href + ' / to: ' + newPage.href);
-        cb();
+        callback();
     });
 
     //Add more pages
@@ -17,4 +18,4 @@ Minimalist js library to navigate across the browser history with no dependencie
     //Go back
     window.history.back();
 </script>
-``
+```
