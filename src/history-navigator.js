@@ -14,67 +14,70 @@
         root.HistoryNavigator = factory();
     }
 }(this, function () {
-    function Navigator (onChange) {
+    function Navigator (config) {
         this.pages = {};
         this.current = document.location.href;
         this.resolver = document.createElement('a');
-
-        this.onChange = onChange || function (oldPage, newPage, cb) {
-            console.log(oldPage);
-            console.log(newPage);
-            cb();
+        this.events = {
+            forward: config.forward || function (page, prevPage, done) { done(); },
+            backward: config.backward || function (page, prevPage, done) { done(); }
         };
 
         this.pages[this.current] = {
             title: document.title,
-            href: this.current,
-            first: true
+            href: this.current
         };
+
+        if (config.init) {
+            config.init.call(this, this.pages[this.current])
+        }
     }
 
     Navigator.prototype = {
         push: function (href) {
-            this.change(href, function () {
+            return this.change(href, 'forward', function () {
                 window.history.pushState({}, '', href);
             });
         },
 
         replace: function (href) {
-            this.change(href, function () {
+            return this.change(href, 'forward', function () {
                 window.history.replaceState({}, '', href);
             });
         },
 
-        change: function (href, cb) {
+        change: function (href, event, done) {
             this.resolver.setAttribute('href', href);
             href = this.resolver.href;
 
-            if (this.current === href) {
+            var prevPage = this.pages[this.current];
+            var page = this.pages[href] || { title: null, href: href };
+
+            if (prevPage === page) {
                 return this;
             }
 
-            var page = this.pages[href] || { title: null, href: href };
-            var self = this;
-
-            this.onChange.call(this, this.pages[this.current], page, function () {
-                self.current = href;
-                self.pages[href] = page;
-                page.init = true;
+            var callback = function () {
+                this.current = href;
+                this.pages[href] = page;
                 document.title = page.title;
-                if (cb) {
-                    cb();
+
+                if (done) {
+                    done();
                 }
-            });
+            };
+
+            this.events[event].call(this, page, prevPage, callback.bind(this));
 
             return this;
         }
     };
 
-    return function (change) {
-        var nav = new Navigator(change);
+    return function (config) {
+        var nav = new Navigator(config || {});
 
         window.onpopstate = function (event) {
-            nav.change(document.location.href);
+            nav.change(document.location.href, 'backward');
         };
 
         return nav;

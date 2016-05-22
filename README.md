@@ -1,17 +1,46 @@
 # history-navigator
 
-Minimalist js library to navigate across the browser history with no dependencies.
+Minimalist library to navigate across the browser history with no dependencies.
+
+Supports:
+
+* AMD
+* CommonJS
+* Global js
+
+## Usage example:
 
 ```html
-<script type="text/javascript" src="src/navigator.js"></script>
+<!-- Load the library -->
+<script type="text/javascript" src="src/history-navigator.js"></script>
+
+<!-- Execute it -->
 <script type="text/javascript">
-    //Define the onChange method
-    var nav = HistoryNavigator(function (oldPage, newPage, callback) {
-        console.log('from: ' + oldPage.href + ' / to: ' + newPage.href);
-        callback();
+
+    var nav = HistoryNavigator({
+        init: function (page, done) {
+            console.log('started from:' + page.href);
+        },
+
+        forward: function (page, oldPage, done) {
+            console.log('load new page');
+
+            loadPage(page.href, function (response) {
+                page.title = response.title;
+                page.body = response.body;
+                document.querySelector('.container').innerHTML = page.body;
+                done();
+            });
+        },
+
+        backward: function (page, oldPage, done) {
+            console.log('back to previous page');
+            
+            document.querySelector('.container').innerHTML = page.body;
+        }
     });
 
-    //Add more pages
+    //Load pages
     nav.push('/path');
     nav.replace('/other-path');
 
