@@ -1,0 +1,13 @@
+{
+  "name": "history-navigator",
+  "main": "src/history-navigator.js",
+  "homepage": "https://github.com/oscarotero/history-navigator",
+  "authors": [
+    "oscarotero <oom@oscarotero.com>"
+  ],
+  "description": "Navigate across the browser history with no dependencies",
+  "keywords": [
+    "history"
+  ],
+  "license": "MIT"
+}
