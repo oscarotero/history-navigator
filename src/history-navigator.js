@@ -25,7 +25,8 @@
 
         this.pages[this.current] = {
             title: document.title,
-            href: this.current
+            href: this.current,
+            index: 0
         };
 
         if (config.init) {
@@ -35,29 +36,34 @@
 
     Navigator.prototype = {
         push: function (href) {
-            return this.change(href, 'forward', function () {
+            return this.change(href, function () {
                 window.history.pushState({}, '', href);
             });
         },
 
         replace: function (href) {
-            return this.change(href, 'forward', function () {
+            return this.change(href, function () {
                 window.history.replaceState({}, '', href);
             });
         },
 
-        change: function (href, event, done) {
+        change: function (href, done) {
             this.resolver.setAttribute('href', href);
             href = this.resolver.href;
 
             var prevPage = this.pages[this.current];
-            var page = this.pages[href] || { title: null, href: href };
+            var page = this.pages[href] || {
+                title: null,
+                href: href,
+                index: Object.keys(this.pages).length
+            };
 
             if (prevPage === page) {
                 return this;
             }
 
-            var callback = function () {
+            var event = prevPage.index < page.index ? 'forward' : 'backward';
+            var callback = (function () {
                 this.current = href;
                 this.pages[href] = page;
                 document.title = page.title;
@@ -65,9 +71,14 @@
                 if (done) {
                     done();
                 }
-            };
+            }).bind(this);
 
-            this.events[event].call(this, page, prevPage, callback.bind(this));
+            if (this.events[event].length < 3) {
+                this.events[event].call(this, page, prevPage);
+                callback();
+            } else {
+                this.events[event].call(this, page, prevPage, callback);
+            }
 
             return this;
         }
@@ -77,7 +88,7 @@
         var nav = new Navigator(config || {});
 
         window.onpopstate = function (event) {
-            nav.change(document.location.href, 'backward');
+            nav.change(document.location.href);
         };
 
         return nav;

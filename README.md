@@ -18,23 +18,37 @@ Supports:
 <script type="text/javascript">
 
     var nav = HistoryNavigator({
-        init: function (page, done) {
-            console.log('started from:' + page.href);
+        init: function (page) {
+            console.log('Navigation started from:' + page.href);
         },
 
         forward: function (page, oldPage, done) {
-            console.log('load new page');
+            console.log('Go to next page');
 
+            page.href;  //To get the url of the page
+            page.title; //To change the page title
+            page.index; //To get the index position (0, 1, 2, ...)
+            page.foo = 'bar'; //Save your own data to retrieve it later
+
+            //We have loaded this page before
+            if (page.body) {
+                document.querySelector('.container').innerHTML = page.body;
+                return done();
+            }
+
+            //Load the page first time:
             loadPage(page.href, function (response) {
                 page.title = response.title;
                 page.body = response.body;
                 document.querySelector('.container').innerHTML = page.body;
+                
+                //This is an asyncronous callback, so use done()
                 done();
             });
         },
 
-        backward: function (page, oldPage, done) {
-            console.log('back to previous page');
+        backward: function (page, oldPage) {
+            console.log('Back to previous page');
             
             document.querySelector('.container').innerHTML = page.body;
         }
