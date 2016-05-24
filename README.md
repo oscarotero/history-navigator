@@ -25,23 +25,25 @@ Supports:
         forward: function (page, oldPage, done) {
             console.log('Go to next page');
 
-            page.href;  //To get the url of the page
-            page.title; //To change the page title
-            page.index; //To get the index position (0, 1, 2, ...)
-            page.foo = 'bar'; //Save your own data to retrieve it later
-
-            //We have loaded this page before
-            if (page.body) {
-                document.querySelector('.container').innerHTML = page.body;
+            //If the page has been loaded before
+            if (page.dom) {
+                document.querySelector('.container').innerHTML = page.dom.querySelector('.container').innerHTML;
                 return done();
             }
 
-            //Load the page first time:
-            loadPage(page.href, function (response) {
-                page.title = response.title;
-                page.body = response.body;
-                document.querySelector('.container').innerHTML = page.body;
-                
+            //helper function to load the page using ajax
+            this.load(page, function () {
+                //Get page info:
+                page.href;  //The url
+                page.title; //The title
+                page.index; //The index position (0, 1, 2, ...)
+                page.dom;   //The html document object
+
+                page.foo = 'bar'; //Save your own data to retrieve it later
+
+                //Insert the content of the page
+                document.querySelector('.container').innerHTML = page.dom.querySelector('.container').innerHTML;
+
                 //This is an asyncronous callback, so use done()
                 done();
             });
@@ -50,7 +52,7 @@ Supports:
         backward: function (page, oldPage) {
             console.log('Back to previous page');
             
-            document.querySelector('.container').innerHTML = page.body;
+            document.querySelector('.container').innerHTML = page.dom.querySelector('.container').innerHTML;
         }
     });
 

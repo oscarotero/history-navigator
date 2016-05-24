@@ -81,6 +81,23 @@
             }
 
             return this;
+        },
+
+        load: function (page, done) {
+            var request = new XMLHttpRequest();
+            request.open('GET', page.href, true);
+
+            request.onload = function () {
+                if (request.status >= 200 && request.status < 400) {
+                    page.dom = document.implementation.createHTMLDocument();
+                    page.dom.documentElement.innerHTML = request.responseText;
+                    page.title = page.dom.title;
+
+                    done(request);
+                }
+            };
+
+            request.send();
         }
     };
 
